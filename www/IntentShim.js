@@ -1,7 +1,3 @@
-//cordova.define("com.darryncampbell.cordova.plugin.intent.IntentShim", function(require, exports, module) {
-//exports.coolMethod = function(arg0, success, error) {
-//    exec(success, error, "EnterpriseBarcode", "coolMethod", [arg0]);
-//};
 
 var argscheck = require('cordova/argscheck'),
     channel = require('cordova/channel'),
@@ -31,7 +27,6 @@ function IntentShim() {
     //  StartActivityForResult
     IntentShim.prototype.ACTION_GET_CONTENT = "android.intent.action.GET_CONTENT";
     IntentShim.prototype.ACTION_PICK = "android.intent.action.PICK";
-    IntentShim.prototype.PICK_CONTACT = "content://com.android.contacts/contacts";
 
 /**
  * @param {Function} successCallback The function to call when the heading data is available
@@ -45,11 +40,6 @@ IntentShim.prototype.startActivity = function(params, successCallback, errorCall
 IntentShim.prototype.startActivityForResult = function(params, successCallback, errorCallback) {
     argscheck.checkArgs('off', 'IntentShim.startActivity', arguments);
     exec(successCallback, errorCallback, "IntentShim", "startActivityForResult", [params]);
-};
-
-IntentShim.prototype.startService = function(params, successCallback, errorCallback) {
-    argscheck.checkArgs('off', 'IntentShim.startService', arguments);
-    exec(successCallback, errorCallback, "IntentShim", "startService", [params]);
 };
 
 IntentShim.prototype.sendBroadcast = function(params, successCallback, errorCallback) {
@@ -91,5 +81,3 @@ window.plugins = window.plugins || {};
 window.plugins.intentShim = window.intentShim;
 
 
-
-//});

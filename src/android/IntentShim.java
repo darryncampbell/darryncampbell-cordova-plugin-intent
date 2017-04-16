@@ -32,9 +32,6 @@ import java.util.Map;
 
 import static android.R.attr.filter;
 
-/**
- * @todo
- */
 public class IntentShim extends CordovaPlugin {
 
     private static final String LOG_TAG = "Cordova Intents Shim";
@@ -81,9 +78,6 @@ public class IntentShim extends CordovaPlugin {
             {
                 bExpectResult = true;
                 this.onActivityResultCallbackContext = callbackContext;
-                PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
-                result.setKeepCallback(true);
-                callbackContext.sendPluginResult(result);
             }
             else {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
@@ -91,10 +85,6 @@ public class IntentShim extends CordovaPlugin {
             startActivity(obj.getString("action"), uri, type, extrasMap, bExpectResult, requestCode);
 
             return true;
-        }
-        else if (action.equals("startService"))
-        {
-            //  todo
         }
         else if (action.equals("sendBroadcast"))
         {
@@ -122,6 +112,13 @@ public class IntentShim extends CordovaPlugin {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             return true;
         } else if (action.equals("registerBroadcastReceiver")) {
+            try
+            {
+                //  Ensure we only have a single registered broadcast receiver
+                ((CordovaActivity)this.cordova.getActivity()).unregisterReceiver(myBroadcastReceiver);
+            }
+            catch (IllegalArgumentException e) {}
+
             //  No error callback
             if(args.length() != 1) {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
@@ -171,7 +168,6 @@ public class IntentShim extends CordovaPlugin {
             result.setKeepCallback(true);
             callbackContext.sendPluginResult(result);
             return true;
-            //  todo
         }
         else if (action.equals("onActivityResult"))
         {
@@ -256,14 +252,17 @@ public class IntentShim extends CordovaPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
         super.onActivityResult(requestCode, resultCode, intent);
-        //  todo
-        if (onActivityResultCallbackContext != null)
+        if (onActivityResultCallbackContext != null && intent != null)
         {
             intent.putExtra("requestCode", requestCode);
             intent.putExtra("resultCode", resultCode);
             PluginResult result = new PluginResult(PluginResult.Status.OK, getIntentJson(intent));
             result.setKeepCallback(true);
             onActivityResultCallbackContext.sendPluginResult(result);
+        }
+        else if (onActivityResultCallbackContext != null)
+        {
+            onActivityResultCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
         }
 
     }
