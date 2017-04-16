@@ -15,7 +15,7 @@
         <config-file platform="android" parent="/manifest/application" mode="merge">
             <activity android:launchMode="singleTop" />
         </config-file>
-        <config-file platform="android" parent="/manifest/application/activity">
+        <config-file platform="android" parent="/manifest/application/activity" mode="merge">
             <intent-filter>
                 <action android:name="com.darryncampbell.cordova.plugin.intent.ACTION" />
                 <category android:name="android.intent.category.DEFAULT" />
