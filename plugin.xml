@@ -12,10 +12,12 @@
                 <param name="android-package" value="com.darryncampbell.cordova.plugin.intent.IntentShim"/>
             </feature>
         </config-file>
+        <config-file platform="android" parent="/manifest/application" mode="merge">
+            <activity android:launchMode="singleTop" />
+        </config-file>
 
         <source-file src="src/android/IntentShim.java" target-dir="src/com/darryncampbell/plugin/intent" />
 		
-		<preference name="AndroidLaunchMode" value="singleTask"/>
     </platform>
 	
 </plugin>
