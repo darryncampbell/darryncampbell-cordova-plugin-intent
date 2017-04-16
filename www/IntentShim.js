@@ -1,4 +1,4 @@
-cordova.define("com.darryncampbell.plugin.intent.IntentShim", function(require, exports, module) {
+//cordova.define("com.darryncampbell.cordova.plugin.intent.IntentShim", function(require, exports, module) {
 //exports.coolMethod = function(arg0, success, error) {
 //    exec(success, error, "EnterpriseBarcode", "coolMethod", [arg0]);
 //};
@@ -92,4 +92,4 @@ window.plugins.intentShim = window.intentShim;
 
 
 
-});
+//});

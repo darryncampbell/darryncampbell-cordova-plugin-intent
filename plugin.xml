@@ -15,6 +15,12 @@
         <config-file platform="android" parent="/manifest/application" mode="merge">
             <activity android:launchMode="singleTop" />
         </config-file>
+        <config-file platform="android" parent="/manifest/application/activity">
+            <intent-filter>
+                <action android:name="com.darryncampbell.cordova.plugin.intent.ACTION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </config-file>
 
         <source-file src="src/android/IntentShim.java" target-dir="src/com/darryncampbell/plugin/intent" />
 		
