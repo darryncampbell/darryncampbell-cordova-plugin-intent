@@ -152,7 +152,11 @@ public class IntentShim extends CordovaPlugin {
         }
         else if (action.equals("unregisterBroadcastReceiver"))
         {
-            ((CordovaActivity)this.cordova.getActivity()).unregisterReceiver(myBroadcastReceiver);
+			try
+			{
+				((CordovaActivity)this.cordova.getActivity()).unregisterReceiver(myBroadcastReceiver);
+			}
+            catch (IllegalArgumentException e) {}
         }
         else if (action.equals("onIntent"))
         {
