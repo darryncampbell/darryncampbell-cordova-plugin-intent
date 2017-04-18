@@ -14,8 +14,9 @@
     "url": "https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent.git"
   },
   "keywords": [
-    "cordova",
-	  "Intent"
+    "ecosystem:cordova",
+	"cordova-android",
+    "Intent"
   ],
   "author": "Darryn Campbell",
   "license": "MIT"
