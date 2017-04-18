@@ -12,9 +12,6 @@
                 <param name="android-package" value="com.darryncampbell.cordova.plugin.intent.IntentShim"/>
             </feature>
         </config-file>
-        <config-file platform="android" parent="/manifest/application" mode="merge">
-            <activity android:launchMode="singleTop" />
-        </config-file>
         <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application/activity" mode="merge">
             <intent-filter>
                 <action android:name="com.darryncampbell.cordova.plugin.intent.ACTION" />

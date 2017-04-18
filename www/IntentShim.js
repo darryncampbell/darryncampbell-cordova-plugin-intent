@@ -1,4 +1,3 @@
-
 var argscheck = require('cordova/argscheck'),
     channel = require('cordova/channel'),
     utils = require('cordova/utils'),
@@ -7,31 +6,25 @@ var argscheck = require('cordova/argscheck'),
 
 
 /**
- * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
- * phone, etc.
+ * This represents a thin shim layer over the Android Intent implementation
  * @constructor
  */
 function IntentShim() {
-    this.available = false;
     var me = this;
 }
 
-    IntentShim.prototype.ACTION_SEND = "android.intent.action.SEND";
-    IntentShim.prototype.ACTION_VIEW= "android.intent.action.VIEW";
-    IntentShim.prototype.EXTRA_TEXT = "android.intent.extra.TEXT";
-    IntentShim.prototype.EXTRA_SUBJECT = "android.intent.extra.SUBJECT";
-    IntentShim.prototype.EXTRA_STREAM = "android.intent.extra.STREAM";
-    IntentShim.prototype.EXTRA_EMAIL = "android.intent.extra.EMAIL";
-    IntentShim.prototype.ACTION_CALL = "android.intent.action.CALL";
-    IntentShim.prototype.ACTION_SENDTO = "android.intent.action.SENDTO";
-    //  StartActivityForResult
-    IntentShim.prototype.ACTION_GET_CONTENT = "android.intent.action.GET_CONTENT";
-    IntentShim.prototype.ACTION_PICK = "android.intent.action.PICK";
+IntentShim.prototype.ACTION_SEND = "android.intent.action.SEND";
+IntentShim.prototype.ACTION_VIEW= "android.intent.action.VIEW";
+IntentShim.prototype.EXTRA_TEXT = "android.intent.extra.TEXT";
+IntentShim.prototype.EXTRA_SUBJECT = "android.intent.extra.SUBJECT";
+IntentShim.prototype.EXTRA_STREAM = "android.intent.extra.STREAM";
+IntentShim.prototype.EXTRA_EMAIL = "android.intent.extra.EMAIL";
+IntentShim.prototype.ACTION_CALL = "android.intent.action.CALL";
+IntentShim.prototype.ACTION_SENDTO = "android.intent.action.SENDTO";
+//  StartActivityForResult
+IntentShim.prototype.ACTION_GET_CONTENT = "android.intent.action.GET_CONTENT";
+IntentShim.prototype.ACTION_PICK = "android.intent.action.PICK";
 
-/**
- * @param {Function} successCallback The function to call when the heading data is available
- * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
- */
 IntentShim.prototype.startActivity = function(params, successCallback, errorCallback) {
     argscheck.checkArgs('off', 'IntentShim.startActivity', arguments);
     exec(successCallback, errorCallback, "IntentShim", "startActivity", [params]);
@@ -72,10 +65,6 @@ IntentShim.prototype.onActivityResult = function(callback) {
     exec(callback, null, "IntentShim", "onActivityResult", [callback]);
 };
 
-
-
-
-//module.exports = new IntentShim();
 window.intentShim = new IntentShim();
 window.plugins = window.plugins || {};
 window.plugins.intentShim = window.intentShim;

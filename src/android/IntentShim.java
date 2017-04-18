@@ -9,11 +9,9 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.Html;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
-import android.widget.Toast;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaActivity;
@@ -25,12 +23,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Array;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static android.R.attr.filter;
 
 public class IntentShim extends CordovaPlugin {
 
@@ -54,7 +49,6 @@ public class IntentShim extends CordovaPlugin {
                 return false;
             }
 
-            // Parse the arguments
             final CordovaResourceApi resourceApi = webView.getResourceApi();
             JSONObject obj = args.getJSONObject(0);
             String type = obj.has("type") ? obj.getString("type") : null;
@@ -250,8 +244,6 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
@@ -288,7 +280,6 @@ public class IntentShim extends CordovaPlugin {
      * Return JSON representation of intent attributes
      *
      * @param intent
-     * @return
      * Credit: https://github.com/napolitano/cordova-plugin-intent
      */
     private JSONObject getIntentJson(Intent intent) {
@@ -399,8 +390,6 @@ public class IntentShim extends CordovaPlugin {
             return String.valueOf(value);
         }
     }
-
-
 }
 
 
