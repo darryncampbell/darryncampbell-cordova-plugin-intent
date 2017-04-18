@@ -65,6 +65,11 @@ IntentShim.prototype.onActivityResult = function(callback) {
     exec(callback, null, "IntentShim", "onActivityResult", [callback]);
 };
 
+IntentShim.prototype.getIntent = function(successCallback, failureCallback) {
+    argscheck.checkArgs('ff', 'IntentShim.getIntent', arguments);
+    exec(successCallback, failureCallback, "IntentShim", "getIntent", []);
+};
+
 window.intentShim = new IntentShim();
 window.plugins = window.plugins || {};
 window.plugins.intentShim = window.intentShim;

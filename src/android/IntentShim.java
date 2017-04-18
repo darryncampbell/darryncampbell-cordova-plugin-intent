@@ -181,6 +181,19 @@ public class IntentShim extends CordovaPlugin {
             callbackContext.sendPluginResult(result);
             return true;
         }
+        else if (action.equals("getIntent"))
+        {
+            //  Credit: https://github.com/napolitano/cordova-plugin-intent
+            if(args.length() != 0) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
+                return false;
+            }
+
+            Intent intent = cordova.getActivity().getIntent();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getIntentJson(intent)));
+            return true;
+        }
+
         return true;
     }
 
