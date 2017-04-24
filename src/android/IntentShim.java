@@ -91,13 +91,14 @@ public class IntentShim extends CordovaPlugin {
             // Parse the arguments
             JSONObject obj = args.getJSONObject(0);
             JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
-            Map<String, String> extrasMap = new HashMap<String, String>();
+            Map<String, Object> extrasMap = new HashMap<String, Object>();
 
             if (extras != null) {
                 JSONArray extraNames = extras.names();
                 for (int i = 0; i < extraNames.length(); i++) {
                     String key = extraNames.getString(i);
-                    String value = extras.getString(key);
+                    //String value = extras.getString(key);
+                    Object value = extras.get(key);
                     extrasMap.put(key, value);
                 }
             }
@@ -246,13 +247,29 @@ public class IntentShim extends CordovaPlugin {
             ((CordovaActivity)this.cordova.getActivity()).startActivity(i);
     }
 
-    private void sendBroadcast(String action, Map<String, String> extras) {
+    private void sendBroadcast(String action, Map<String, Object> extras) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent intent = new Intent();
         intent.setAction(action);
+        //  This method can handle sending broadcasts of Strings and String Arrays.
         for (String key : extras.keySet()) {
-            String value = extras.get(key);
-            intent.putExtra(key, value);
+            Object value = extras.get(key);
+            if (value instanceof String)
+                intent.putExtra(key, (String)value);
+            else if (value instanceof JSONArray)
+            {
+                //  String Array
+                JSONArray valueArray = (JSONArray)value;
+                String[] values = new String[valueArray.length()];
+                for (int i = 0; i < valueArray.length(); i++)
+                    try {
+                        values[i] = valueArray.getString(i);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                intent.putExtra(key, values);
+            }
+
         }
 
         ((CordovaActivity)this.cordova.getActivity()).sendBroadcast(intent);
