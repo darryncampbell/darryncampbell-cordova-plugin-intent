@@ -130,6 +130,9 @@ public class IntentShim extends CordovaPlugin {
                 return false;
             }
 
+			//  Optionally, an array of filterCategories
+            JSONArray filterCategories = obj.has("filterCategories") ? obj.getJSONArray("filterCategories") : null;
+            			
             this.onBroadcastCallbackContext = callbackContext;
 
             PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -140,6 +143,14 @@ public class IntentShim extends CordovaPlugin {
                 Log.d(LOG_TAG, "Registering broadcast receiver for filter: " + filters.getString(i));
                 filter.addAction(filters.getString(i));
             }
+			if (filterCategories != null)
+			{
+				for (int i = 0; i < filterCategories.length(); i++)
+				{
+					Log.d(LOG_TAG, "Registering broadcast receiver for filter category: " + filterCategories.getString(i));
+					filter.addCategory(Intent.CATEGORY_DEFAULT);
+				}
+			}
             ((CordovaActivity)this.cordova.getActivity()).registerReceiver(myBroadcastReceiver, filter);
 
             callbackContext.sendPluginResult(result);
