@@ -251,11 +251,13 @@ public class IntentShim extends CordovaPlugin {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent intent = new Intent();
         intent.setAction(action);
-        //  This method can handle sending broadcasts of Strings and String Arrays.
+        //  This method can handle sending broadcasts of Strings, Booleans and String Arrays.
         for (String key : extras.keySet()) {
             Object value = extras.get(key);
             if (value instanceof String)
                 intent.putExtra(key, (String)value);
+            else if (value instanceof Boolean)
+                intent.putExtra(key, (Boolean)value);
             else if (value instanceof JSONArray)
             {
                 //  String Array
