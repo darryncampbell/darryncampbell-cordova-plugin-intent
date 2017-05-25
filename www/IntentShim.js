@@ -24,6 +24,8 @@ IntentShim.prototype.ACTION_SENDTO = "android.intent.action.SENDTO";
 //  StartActivityForResult
 IntentShim.prototype.ACTION_GET_CONTENT = "android.intent.action.GET_CONTENT";
 IntentShim.prototype.ACTION_PICK = "android.intent.action.PICK";
+IntentShim.prototype.RESULT_CANCELED = 0; //  Activity.RESULT_CANCELED
+IntentShim.prototype.RESULT_OK = -1; //  Activity.RESULT_OK
 
 IntentShim.prototype.startActivity = function(params, successCallback, errorCallback) {
     argscheck.checkArgs('off', 'IntentShim.startActivity', arguments);
