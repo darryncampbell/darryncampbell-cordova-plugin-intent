@@ -301,7 +301,12 @@ public class IntentShim extends CordovaPlugin {
         }
         else if (onActivityResultCallbackContext != null)
         {
-            onActivityResultCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
+            Intent canceledIntent = new Intent();
+            canceledIntent.putExtra("requestCode", requestCode);
+            canceledIntent.putExtra("resultCode", resultCode);
+            PluginResult canceledResult = new PluginResult(PluginResult.Status.OK, getIntentJson(canceledIntent));
+            canceledResult.setKeepCallback(true);
+            onActivityResultCallbackContext.sendPluginResult(canceledResult);
         }
 
     }
