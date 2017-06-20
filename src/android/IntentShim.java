@@ -1,17 +1,26 @@
 package com.darryncampbell.cordova.plugin.intent;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.Html;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
+
+import com.darryncampbell.cordova.plugin.intent.api.exerciser.BuildConfig;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaActivity;
@@ -22,10 +31,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.os.Environment.getExternalStorageDirectory;
 
 public class IntentShim extends CordovaPlugin {
 
@@ -52,7 +64,41 @@ public class IntentShim extends CordovaPlugin {
             final CordovaResourceApi resourceApi = webView.getResourceApi();
             JSONObject obj = args.getJSONObject(0);
             String type = obj.has("type") ? obj.getString("type") : null;
-            Uri uri = obj.has("url") ? resourceApi.remapUri(Uri.parse(obj.getString("url"))) : null;
+            //Uri uri = obj.has("url") ? resourceApi.remapUri(Uri.parse(obj.getString("url"))) : null;
+            Uri uri = null;
+            if (obj.has("url"))
+            {
+                String uriAsString = obj.getString("url");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && uriAsString.startsWith("file"))
+                {
+                    int permissionCheck = ContextCompat.checkSelfPermission(this.cordova.getActivity(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE);
+                    if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+                    {
+                        ActivityCompat.requestPermissions(this.cordova.getActivity(),
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                1);
+                    }
+
+                    //  Create the URI via FileProvider
+                    try
+                    {
+                        String fileName = uriAsString.substring(uriAsString.lastIndexOf('/') + 1, uriAsString.length());
+                        File uriAsFile = new File(Environment.getExternalStorageDirectory(), fileName);
+                        boolean fileExists = uriAsFile.exists();
+                        uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), BuildConfig.APPLICATION_ID, uriAsFile);
+                    }
+                    catch(StringIndexOutOfBoundsException e)
+                    {
+                        Log.e(LOG_TAG, "URL is not well formed");
+                        throw e;
+                    }
+                }
+                else
+                {
+                    uri = resourceApi.remapUri(Uri.parse(obj.getString("url")));
+                }
+            }
             JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
             Map<String, String> extrasMap = new HashMap<String, String>();
             int requestCode = obj.has("requestCode") ? obj.getInt("requestCode") : 1;
@@ -91,14 +137,13 @@ public class IntentShim extends CordovaPlugin {
             // Parse the arguments
             JSONObject obj = args.getJSONObject(0);
             JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
-            Map<String, Object> extrasMap = new HashMap<String, Object>();
+            Map<String, String> extrasMap = new HashMap<String, String>();
 
             if (extras != null) {
                 JSONArray extraNames = extras.names();
                 for (int i = 0; i < extraNames.length(); i++) {
                     String key = extraNames.getString(i);
-                    //String value = extras.getString(key);
-                    Object value = extras.get(key);
+                    String value = extras.getString(key);
                     extrasMap.put(key, value);
                 }
             }
@@ -131,9 +176,6 @@ public class IntentShim extends CordovaPlugin {
                 return false;
             }
 
-			//  Optionally, an array of filterCategories
-            JSONArray filterCategories = obj.has("filterCategories") ? obj.getJSONArray("filterCategories") : null;
-            			
             this.onBroadcastCallbackContext = callbackContext;
 
             PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -144,14 +186,6 @@ public class IntentShim extends CordovaPlugin {
                 Log.d(LOG_TAG, "Registering broadcast receiver for filter: " + filters.getString(i));
                 filter.addAction(filters.getString(i));
             }
-			if (filterCategories != null)
-			{
-				for (int i = 0; i < filterCategories.length(); i++)
-				{
-					Log.d(LOG_TAG, "Registering broadcast receiver for filter category: " + filterCategories.getString(i));
-					filter.addCategory(Intent.CATEGORY_DEFAULT);
-				}
-			}
             ((CordovaActivity)this.cordova.getActivity()).registerReceiver(myBroadcastReceiver, filter);
 
             callbackContext.sendPluginResult(result);
@@ -205,6 +239,35 @@ public class IntentShim extends CordovaPlugin {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getIntentJson(intent)));
             return true;
         }
+        else if (action.equals("sendResult"))
+        {
+            //  Assuming this application was started with startActivityForResult, send the result back
+            //  https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent/issues/3
+            Intent result = new Intent();
+            if (args.length() > 0)
+            {
+                JSONObject json = args.getJSONObject(0);
+                JSONObject extras = (json.has("extras"))?json.getJSONObject("extras"):null;
+
+                // Populate the extras if any exist
+                if (extras != null) {
+                    JSONArray extraNames = extras.names();
+                    for (int i = 0; i < extraNames.length(); i++) {
+                        String key = extraNames.getString(i);
+                        String value = extras.getString(key);
+                        result.putExtra(key, value);
+                    }
+                }
+            }
+
+            //set result
+            cordova.getActivity().setResult(Activity.RESULT_OK, result);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+
+            //finish the activity
+            cordova.getActivity().finish();
+
+        }
 
         return true;
     }
@@ -218,6 +281,10 @@ public class IntentShim extends CordovaPlugin {
         } else {
             if (type != null) {
                 i.setType(type);
+            }
+            if (uri != null)
+            {
+                i.setData(uri);
             }
         }
 
@@ -238,6 +305,9 @@ public class IntentShim extends CordovaPlugin {
                 i.putExtra(key, value);
             }
         }
+
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
         if (bExpectResult)
         {
             cordova.setActivityResultCallback(this);
@@ -247,31 +317,13 @@ public class IntentShim extends CordovaPlugin {
             ((CordovaActivity)this.cordova.getActivity()).startActivity(i);
     }
 
-    private void sendBroadcast(String action, Map<String, Object> extras) {
+    private void sendBroadcast(String action, Map<String, String> extras) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent intent = new Intent();
         intent.setAction(action);
-        //  This method can handle sending broadcasts of Strings, Booleans and String Arrays.
         for (String key : extras.keySet()) {
-            Object value = extras.get(key);
-            if (value instanceof String)
-                intent.putExtra(key, (String)value);
-            else if (value instanceof Boolean)
-                intent.putExtra(key, (Boolean)value);
-            else if (value instanceof JSONArray)
-            {
-                //  String Array
-                JSONArray valueArray = (JSONArray)value;
-                String[] values = new String[valueArray.length()];
-                for (int i = 0; i < valueArray.length(); i++)
-                    try {
-                        values[i] = valueArray.getString(i);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                intent.putExtra(key, values);
-            }
-
+            String value = extras.get(key);
+            intent.putExtra(key, value);
         }
 
         ((CordovaActivity)this.cordova.getActivity()).sendBroadcast(intent);
