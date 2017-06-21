@@ -20,7 +20,6 @@ import android.text.Html;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-import com.darryncampbell.cordova.plugin.intent.api.exerciser.BuildConfig;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaActivity;
@@ -86,7 +85,8 @@ public class IntentShim extends CordovaPlugin {
                         String fileName = uriAsString.substring(uriAsString.lastIndexOf('/') + 1, uriAsString.length());
                         File uriAsFile = new File(Environment.getExternalStorageDirectory(), fileName);
                         boolean fileExists = uriAsFile.exists();
-                        uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), BuildConfig.APPLICATION_ID, uriAsFile);
+                        String PACKAGE_NAME = this.cordova.getActivity().getPackageName();
+                        uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), PACKAGE_NAME, uriAsFile);
                     }
                     catch(StringIndexOutOfBoundsException e)
                     {
