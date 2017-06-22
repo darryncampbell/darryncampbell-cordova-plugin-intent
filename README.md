@@ -6,6 +6,9 @@
 [![npm downloads](http://img.shields.io/npm/dt/com-darryncampbell-cordova-plugin-intent.svg?style=flat-square)](https://npmjs.org/package/com-darryncampbell-cordova-plugin-intent "View this project on npm")
 [![npm licence](http://img.shields.io/npm/l/com-darryncampbell-cordova-plugin-intent.svg?style=flat-square)](https://npmjs.org/package/com-darryncampbell-cordova-plugin-intent "View this project on npm")
 
+# Interaction with Camera Plugin
+If you are installing this plugin along with cordova-plugin-camera you **MUST install cordova-plugin-camera first.**
+
 # Overview
 This Cordova plugin provides a general purpose shim layer for the Android intent mechanism, exposing various ways to handle sending and receiving intents.
 
