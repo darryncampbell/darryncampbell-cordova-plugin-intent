@@ -20,7 +20,6 @@ import android.text.Html;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaPlugin;
@@ -31,12 +30,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.os.Environment.getExternalStorageDirectory;
+import static android.os.Environment.getExternalStorageState;
 
 public class IntentShim extends CordovaPlugin {
 
@@ -68,30 +69,49 @@ public class IntentShim extends CordovaPlugin {
             if (obj.has("url"))
             {
                 String uriAsString = obj.getString("url");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && uriAsString.startsWith("file"))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && uriAsString.startsWith("file://"))
                 {
+                    //  Create the URI via FileProvider  Special case for N and above when installing apks
                     int permissionCheck = ContextCompat.checkSelfPermission(this.cordova.getActivity(),
                             Manifest.permission.READ_EXTERNAL_STORAGE);
                     if (permissionCheck != PackageManager.PERMISSION_GRANTED)
                     {
+                        //  Could do better here - if the app does not already have permission should
+                        //  only continue when we get the success callback from this.
                         ActivityCompat.requestPermissions(this.cordova.getActivity(),
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                1);
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                        callbackContext.error("Please grant read external storage permission");
+                        return false;
                     }
 
-                    //  Create the URI via FileProvider
                     try
                     {
-                        String fileName = uriAsString.substring(uriAsString.lastIndexOf('/') + 1, uriAsString.length());
-                        File uriAsFile = new File(Environment.getExternalStorageDirectory(), fileName);
-                        boolean fileExists = uriAsFile.exists();
-                        String PACKAGE_NAME = this.cordova.getActivity().getPackageName();
-                        uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), PACKAGE_NAME, uriAsFile);
+                        String externalStorageState = getExternalStorageState();
+                        if (externalStorageState.equals(Environment.MEDIA_MOUNTED) || externalStorageState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
+                            String fileName = uriAsString.substring(uriAsString.indexOf('/') + 2, uriAsString.length());
+                            File uriAsFile = new File(Environment.getExternalStorageDirectory(), fileName);
+                            boolean fileExists = uriAsFile.exists();
+                            if (!fileExists)
+                            {
+                                Log.e(LOG_TAG, "File at path " + uriAsFile.getPath() + " with name " + uriAsFile.getName() + "does not exist");
+                                callbackContext.error("File not found: " + uriAsFile.toString());
+                                return false;
+                            }
+                            String PACKAGE_NAME = this.cordova.getActivity().getPackageName();
+                            uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), PACKAGE_NAME, uriAsFile);
+                        }
+                        else
+                        {
+                            Log.e(LOG_TAG, "Storage directory is not mounted.  Please ensure the device is not connected via USB for file transfer");
+                            callbackContext.error("Storage directory is returning not mounted");
+                            return false;
+                        }
                     }
                     catch(StringIndexOutOfBoundsException e)
                     {
                         Log.e(LOG_TAG, "URL is not well formed");
-                        throw e;
+                        callbackContext.error("URL is not well formed");
+                        return false;
                     }
                 }
                 else
