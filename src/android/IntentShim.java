@@ -89,7 +89,7 @@ public class IntentShim extends CordovaPlugin {
                         String externalStorageState = getExternalStorageState();
                         if (externalStorageState.equals(Environment.MEDIA_MOUNTED) || externalStorageState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
                             String fileName = uriAsString.substring(uriAsString.indexOf('/') + 2, uriAsString.length());
-                            File uriAsFile = new File(Environment.getExternalStorageDirectory(), fileName);
+                            File uriAsFile = new File(fileName);
                             boolean fileExists = uriAsFile.exists();
                             if (!fileExists)
                             {
