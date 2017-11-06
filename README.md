@@ -178,6 +178,33 @@ Launch the web browser
     function() {alert('Failed to open URL via Android Intent')}
     );
 
+## intentShim.getIntent
+
+Retrieves the intent that launched the activity
+
+    window.plugins.intentShim.getIntent(resultCallback, failureCallback);
+
+### Description
+
+The `intentShim.getIntent` function maps to Android's activity method getIntent, https://developer.android.com/reference/android/app/Activity.html#getIntent() to return the intent that started this activity.
+
+### Example
+
+    window.plugins.intentShim.getIntent(
+        function(intent)
+        {
+            console.log('Action' + JSON.stringify(intent.action));
+            var intentExtras = intent.extras;
+            if (intentExtras == null)
+                intentExtras = "No extras in intent";
+            console.log('Launch Intent Extras: ' + JSON.stringify(intentExtras);
+        },
+        function()
+        {
+            console.log('Error getting launch intent');
+        });
+
+
 ## intentShim.startActivityForResult
 
 Starts a new activity and return the result to the application
