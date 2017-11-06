@@ -30,7 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -139,10 +139,7 @@ public class IntentShim extends CordovaPlugin {
                 bExpectResult = true;
                 this.onActivityResultCallbackContext = callbackContext;
             }
-            else {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
-            }
-            startActivity(obj.getString("action"), uri, type, extrasMap, bExpectResult, requestCode);
+            startActivity(obj.getString("action"), uri, type, extrasMap, bExpectResult, requestCode, callbackContext);
 
             return true;
         }
@@ -292,7 +289,7 @@ public class IntentShim extends CordovaPlugin {
         return true;
     }
 
-    private void startActivity(String action, Uri uri, String type, Map<String, String> extras, boolean bExpectResult, int requestCode) {
+    private void startActivity(String action, Uri uri, String type, Map<String, String> extras, boolean bExpectResult, int requestCode, CallbackContext callbackContext) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent i = (uri != null ? new Intent(action, uri) : new Intent(action));
 
@@ -328,13 +325,24 @@ public class IntentShim extends CordovaPlugin {
 
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
+        if (i.resolveActivityInfo(this.cordova.getActivity().getPackageManager(), 0) != null)
+        {
         if (bExpectResult)
         {
             cordova.setActivityResultCallback(this);
             ((CordovaActivity) this.cordova.getActivity()).startActivityForResult(i, requestCode);
         }
         else
+            {
             ((CordovaActivity)this.cordova.getActivity()).startActivity(i);
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+            }
+        }
+        else
+        {
+            //  Return an error as there is no app to handle this intent
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR));
+        }
     }
 
     private void sendBroadcast(String action, Map<String, String> extras) {
