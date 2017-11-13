@@ -19,14 +19,19 @@ This project uses code released under the following MIT projects:
 This project is also released under MIT.  Credit is given in the code where appropriate
 
 ## IntentShim
-This plugin defines a `window.plugins.intentShim` object which provides an API for interacting with the Android intent mechanism on any Android device.  
+This plugin defines a `window.plugins.intentShim` object which provides an API for interacting with the Android intent mechanism on any Android device.
 
 ## Testing / Example
 An example application is available at https://github.com/darryncampbell/plugin-intent-api-exerciser to demonstrate the API and can be used to test the functionality.
 
 ## Installation
+
+### Cordova Version < 7
     cordova plugin add https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent.git
-    
+
+### Cordova Version >= 7
+    cordova plugin add com-darryncampbell-cordova-plugin-intent
+
 ## Supported Platforms
 - Android
 
@@ -35,7 +40,7 @@ An example application is available at https://github.com/darryncampbell/plugin-
 Registers a broadcast receiver for the specified filters
 
     window.plugins.intentShim.registerBroadcastReceiver(filters, callback);
-    
+
 ### Description
 
 The `intentShim.registerBroadcastReceiver` function registers a dynamic broadcast receiver for the specified list of filters and invokes the specified callback when any of those filters are received
@@ -91,7 +96,7 @@ Unregister the broadcast receiver when the application receives an onPause event
 Sends a broadcast intent
 
     window.plugins.intentShim.sendBroadcast(action, extras, successCallback, failureCallback);
-    
+
 ### Description
 
 The `intentShim.sendBroadcast` function sends an Android broadcast intent with a specified action
@@ -117,7 +122,7 @@ Send a broadcast intent to a specified action that contains a random number in t
 Returns the content of the intent used whenever the application activity is launched
 
     window.plugins.intentShim.onIntent(callback);
-    
+
 ### Description
 
 The `intentShim.onIntent` function returns the intent which launched the Activity and maps to the Android Activity's onNewIntent() method, https://developer.android.com/reference/android/app/Activity.html#onNewIntent(android.content.Intent).  The registered callback is invoked whenever the activity is launched
@@ -145,7 +150,7 @@ Registers a callback to be invoked
 Starts a new activity using an intent built from action, url, type, extras or some subset of those parameters
 
     window.plugins.intentShim.startActivity(params, successCallback, failureCallback);
-    
+
 ### Description
 
 The `intentShim.startActivity` function maps to Android's activity method startActivity, https://developer.android.com/reference/android/app/Activity.html#startActivity(android.content.Intent) to launch a new activity.
@@ -166,7 +171,7 @@ Launch the maps activity
     function() {},
     function() {alert('Failed to open URL via Android Intent')}
     );
-            
+
 Launch the web browser
 
     window.plugins.intentShim.startActivity(
@@ -210,7 +215,7 @@ The `intentShim.getIntent` function maps to Android's activity method getIntent,
 Starts a new activity and return the result to the application
 
     window.plugins.intentShim.startActivityForResult(params, resultCallback, failureCallback);
-    
+
 ### Description
 
 The `intentShim.startActivityForResult` function maps to Android's activity method startActivityForResult, https://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent, int) to launch a new activity and the resulting data is returned via the resultCallback.
@@ -255,7 +260,7 @@ The following constants are defined in the plugin for use in JavaScript
 - window.plugins.intentShim.ACTION_SENDTO
 - window.plugins.intentShim.ACTION_GET_CONTENT
 - window.plugins.intentShim.ACTION_PICK
- 
+
 ## Tested Versions
 
 Tested with Cordova version 6.5.0 and Cordova Android version 6.2.1
