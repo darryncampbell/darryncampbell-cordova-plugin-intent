@@ -184,8 +184,8 @@ public class IntentShim extends CordovaPlugin {
 
             //  Expect an array of filterActions
             JSONObject obj = args.getJSONObject(0);
-            JSONArray filters = obj.has("filterActions") ? obj.getJSONArray("filterActions") : null;
-            if (filters == null || filters.length() == 0)
+            JSONArray filterActions = obj.has("filterActions") ? obj.getJSONArray("filterActions") : null;
+            if (filterActions == null || filterActions.length() == 0)
             {
                 //  The arguments are not correct
                 Log.w(LOG_TAG, "filterActions argument is not in the expected format");
@@ -199,10 +199,23 @@ public class IntentShim extends CordovaPlugin {
             result.setKeepCallback(true);
 
             IntentFilter filter = new IntentFilter();
-            for (int i = 0; i < filters.length(); i++) {
-                Log.d(LOG_TAG, "Registering broadcast receiver for filter: " + filters.getString(i));
-                filter.addAction(filters.getString(i));
+            for (int i = 0; i < filterActions.length(); i++) {
+                Log.d(LOG_TAG, "Registering broadcast receiver for filter: " + filterActions.getString(i));
+                filter.addAction(filterActions.getString(i));
             }
+
+            //  Add any specified Data Schemes
+            //  https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent/issues/24
+            JSONArray filterDataSchemes = obj.has("filterDataSchemes") ? obj.getJSONArray("filterDataSchemes") : null;
+            if (filterDataSchemes != null && filterDataSchemes.length() > 0)
+            {
+                for (int i = 0; i < filterDataSchemes.length(); i++)
+                {
+                    Log.d(LOG_TAG, "Associating data scheme to filter: " + filterDataSchemes.getString(i));
+                    filter.addDataScheme(filterDataSchemes.getString(i));
+                }
+            }
+
             ((CordovaActivity)this.cordova.getActivity()).registerReceiver(myBroadcastReceiver, filter);
 
             callbackContext.sendPluginResult(result);
