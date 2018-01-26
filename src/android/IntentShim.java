@@ -71,48 +71,7 @@ public class IntentShim extends CordovaPlugin {
                 String uriAsString = obj.getString("url");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && uriAsString.startsWith("file://"))
                 {
-                    //  Create the URI via FileProvider  Special case for N and above when installing apks
-                    int permissionCheck = ContextCompat.checkSelfPermission(this.cordova.getActivity(),
-                            Manifest.permission.READ_EXTERNAL_STORAGE);
-                    if (permissionCheck != PackageManager.PERMISSION_GRANTED)
-                    {
-                        //  Could do better here - if the app does not already have permission should
-                        //  only continue when we get the success callback from this.
-                        ActivityCompat.requestPermissions(this.cordova.getActivity(),
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                        callbackContext.error("Please grant read external storage permission");
-                        return false;
-                    }
-
-                    try
-                    {
-                        String externalStorageState = getExternalStorageState();
-                        if (externalStorageState.equals(Environment.MEDIA_MOUNTED) || externalStorageState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
-                            String fileName = uriAsString.substring(uriAsString.indexOf('/') + 2, uriAsString.length());
-                            File uriAsFile = new File(fileName);
-                            boolean fileExists = uriAsFile.exists();
-                            if (!fileExists)
-                            {
-                                Log.e(LOG_TAG, "File at path " + uriAsFile.getPath() + " with name " + uriAsFile.getName() + "does not exist");
-                                callbackContext.error("File not found: " + uriAsFile.toString());
-                                return false;
-                            }
-                            String PACKAGE_NAME = this.cordova.getActivity().getPackageName() + ".provider";
-                            uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), PACKAGE_NAME, uriAsFile);
-                        }
-                        else
-                        {
-                            Log.e(LOG_TAG, "Storage directory is not mounted.  Please ensure the device is not connected via USB for file transfer");
-                            callbackContext.error("Storage directory is returning not mounted");
-                            return false;
-                        }
-                    }
-                    catch(StringIndexOutOfBoundsException e)
-                    {
-                        Log.e(LOG_TAG, "URL is not well formed");
-                        callbackContext.error("URL is not well formed");
-                        return false;
-                    }
+                    uri = remapUriWithFileProvider(uriAsString, callbackContext);
                 }
                 else
                 {
@@ -302,6 +261,53 @@ public class IntentShim extends CordovaPlugin {
         return true;
     }
 
+    private Uri remapUriWithFileProvider(String uriAsString, final CallbackContext callbackContext)
+    {
+        //  Create the URI via FileProvider  Special case for N and above when installing apks
+        int permissionCheck = ContextCompat.checkSelfPermission(this.cordova.getActivity(),
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            //  Could do better here - if the app does not already have permission should
+            //  only continue when we get the success callback from this.
+            ActivityCompat.requestPermissions(this.cordova.getActivity(),
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            callbackContext.error("Please grant read external storage permission");
+            return null;
+        }
+
+        try
+        {
+            String externalStorageState = getExternalStorageState();
+            if (externalStorageState.equals(Environment.MEDIA_MOUNTED) || externalStorageState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
+                String fileName = uriAsString.substring(uriAsString.indexOf('/') + 2, uriAsString.length());
+                File uriAsFile = new File(fileName);
+                boolean fileExists = uriAsFile.exists();
+                if (!fileExists)
+                {
+                    Log.e(LOG_TAG, "File at path " + uriAsFile.getPath() + " with name " + uriAsFile.getName() + "does not exist");
+                    callbackContext.error("File not found: " + uriAsFile.toString());
+                    return null;
+                }
+                String PACKAGE_NAME = this.cordova.getActivity().getPackageName() + ".provider";
+                Uri uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), PACKAGE_NAME, uriAsFile);
+                return uri;
+            }
+            else
+            {
+                Log.e(LOG_TAG, "Storage directory is not mounted.  Please ensure the device is not connected via USB for file transfer");
+                callbackContext.error("Storage directory is returning not mounted");
+                return null;
+            }
+        }
+        catch(StringIndexOutOfBoundsException e)
+        {
+            Log.e(LOG_TAG, "URL is not well formed");
+            callbackContext.error("URL is not well formed");
+            return null;
+        }
+    }
+
     private void startActivity(String action, Uri uri, String type, Map<String, String> extras, boolean bExpectResult, int requestCode, CallbackContext callbackContext) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent i = (uri != null ? new Intent(action, uri) : new Intent(action));
@@ -324,10 +330,19 @@ public class IntentShim extends CordovaPlugin {
             if (key.equals(Intent.EXTRA_TEXT) && type.equals("text/html")) {
                 i.putExtra(key, Html.fromHtml(value));
             } else if (key.equals(Intent.EXTRA_STREAM)) {
-                // allowes sharing of images as attachments.
+                // allows sharing of images as attachments.
                 // value in this case should be a URI of a file
-                final CordovaResourceApi resourceApi = webView.getResourceApi();
-                i.putExtra(key, resourceApi.remapUri(Uri.parse(value)));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && value.startsWith("file://"))
+                {
+                    Uri uriOfStream = remapUriWithFileProvider(value, callbackContext);
+                    if (uriOfStream != null)
+                        i.putExtra(key, uriOfStream);
+                }
+                else
+                {
+                    final CordovaResourceApi resourceApi = webView.getResourceApi();
+                    i.putExtra(key, resourceApi.remapUri(Uri.parse(value)));
+                }
             } else if (key.equals(Intent.EXTRA_EMAIL)) {
                 // allows to add the email address of the receiver
                 i.putExtra(Intent.EXTRA_EMAIL, new String[] { value });

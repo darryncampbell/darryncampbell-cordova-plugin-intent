@@ -21,6 +21,9 @@
         <config-file target="AndroidManifest.xml" platform="android" parent="/manifest" mode="merge">
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
         </config-file>
+        <config-file target="AndroidManifest.xml" platform="android" parent="/manifest" mode="merge">
+            <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+        </config-file>
         <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application" mode="merge">
             <provider
                 android:name="android.support.v4.content.FileProvider"
