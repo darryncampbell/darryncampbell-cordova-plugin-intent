@@ -163,6 +163,15 @@ public class IntentShim extends CordovaPlugin {
                 filter.addAction(filterActions.getString(i));
             }
 
+            //  Allow an array of filterCategories
+            JSONArray filterCategories = obj.has("filterCategories") ? obj.getJSONArray("filterCategories") : null;
+            if (filterCategories != null) {
+                for (int i = 0; i < filterCategories.length(); i++) {
+                    Log.d(LOG_TAG, "Registering broadcast receiver for category filter: " + filterCategories.getString(i));
+                    filter.addCategory(filterCategories.getString(i));
+                }
+            }
+            
             //  Add any specified Data Schemes
             //  https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent/issues/24
             JSONArray filterDataSchemes = obj.has("filterDataSchemes") ? obj.getJSONArray("filterDataSchemes") : null;
