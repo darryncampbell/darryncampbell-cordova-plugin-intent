@@ -64,6 +64,7 @@ public class IntentShim extends CordovaPlugin {
             final CordovaResourceApi resourceApi = webView.getResourceApi();
             JSONObject obj = args.getJSONObject(0);
             String type = obj.has("type") ? obj.getString("type") : null;
+            String packageAssociated = obj.has("package") ? obj.getString("package") : null;
             //Uri uri = obj.has("url") ? resourceApi.remapUri(Uri.parse(obj.getString("url"))) : null;
             Uri uri = null;
             if (obj.has("url"))
@@ -98,7 +99,7 @@ public class IntentShim extends CordovaPlugin {
                 bExpectResult = true;
                 this.onActivityResultCallbackContext = callbackContext;
             }
-            startActivity(obj.getString("action"), uri, type, extrasMap, bExpectResult, requestCode, callbackContext);
+            startActivity(obj.getString("action"), uri, type, packageAssociated, extrasMap, bExpectResult, requestCode, callbackContext);
 
             return true;
         }
@@ -112,6 +113,7 @@ public class IntentShim extends CordovaPlugin {
 
             // Parse the arguments
             JSONObject obj = args.getJSONObject(0);
+            String packageAssociated = obj.has("package") ? obj.getString("package") : null;
             JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
             Map<String, String> extrasMap = new HashMap<String, String>();
 
@@ -124,7 +126,7 @@ public class IntentShim extends CordovaPlugin {
                 }
             }
 
-            sendBroadcast(obj.getString("action"), extrasMap);
+            sendBroadcast(obj.getString("action"), packageAssociated, extrasMap);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             return true;
         } else if (action.equals("registerBroadcastReceiver")) {
@@ -317,7 +319,7 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-    private void startActivity(String action, Uri uri, String type, Map<String, String> extras, boolean bExpectResult, int requestCode, CallbackContext callbackContext) {
+    private void startActivity(String action, Uri uri, String type, String packageAssociated, Map<String, String> extras, boolean bExpectResult, int requestCode, CallbackContext callbackContext) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent i = (uri != null ? new Intent(action, uri) : new Intent(action));
 
@@ -332,6 +334,9 @@ public class IntentShim extends CordovaPlugin {
                 i.setData(uri);
             }
         }
+
+        if (packageAssociated != null)
+            i.setPackage(packageAssociated);
 
         for (String key : extras.keySet()) {
             String value = extras.get(key);
@@ -382,10 +387,12 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-    private void sendBroadcast(String action, Map<String, String> extras) {
+    private void sendBroadcast(String action, String packageAssociated, Map<String, String> extras) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent intent = new Intent();
         intent.setAction(action);
+        if (packageAssociated != null)
+            intent.setPackage(packageAssociated);
         for (String key : extras.keySet()) {
             String value = extras.get(key);
             intent.putExtra(key, value);
