@@ -32,9 +32,12 @@ import org.json.JSONObject;
 import java.io.File;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import static android.os.Environment.getExternalStorageDirectory;
 import static android.os.Environment.getExternalStorageState;
@@ -81,16 +84,28 @@ public class IntentShim extends CordovaPlugin {
             }
             JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
             Map<String, String> extrasMap = new HashMap<String, String>();
+            Bundle bundle = null;
+            String bundleKey = "";
+
             int requestCode = obj.has("requestCode") ? obj.getInt("requestCode") : 1;
 
             // Populate the extras if any exist
             if (extras != null) {
-                JSONArray extraNames = extras.names();
-                for (int i = 0; i < extraNames.length(); i++) {
-                    String key = extraNames.getString(i);
-                    String value = extras.getString(key);
-                    extrasMap.put(key, value);
+              JSONArray extraNames = extras.names();
+              for (int i = 0; i < extraNames.length(); i++) {
+                String key = extraNames.getString(i);
+                Object extrasObj = extras.get(key);
+                if (extrasObj instanceof JSONObject)
+                {
+                  //  The extra is a bundle
+                  bundleKey = key;
+                  bundle = toBundle((JSONObject)extras.get(key));
                 }
+                else
+                {
+                  extrasMap.put(key, extras.getString(key));
+                }
+              }
             }
 
             boolean bExpectResult = false;
@@ -99,7 +114,7 @@ public class IntentShim extends CordovaPlugin {
                 bExpectResult = true;
                 this.onActivityResultCallbackContext = callbackContext;
             }
-            startActivity(obj.getString("action"), uri, type, packageAssociated, extrasMap, bExpectResult, requestCode, callbackContext);
+            startActivity(obj.getString("action"), uri, type, packageAssociated, extrasMap, bExpectResult, requestCode, bundle, bundleKey, callbackContext);
 
             return true;
         }
@@ -116,17 +131,30 @@ public class IntentShim extends CordovaPlugin {
             String packageAssociated = obj.has("package") ? obj.getString("package") : null;
             JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
             Map<String, String> extrasMap = new HashMap<String, String>();
+            Bundle bundle = null;
+            String bundleKey = "";
 
             if (extras != null) {
                 JSONArray extraNames = extras.names();
                 for (int i = 0; i < extraNames.length(); i++) {
                     String key = extraNames.getString(i);
-                    String value = extras.getString(key);
-                    extrasMap.put(key, value);
+                    Object extrasObj = extras.get(key);
+                    if (extrasObj instanceof JSONObject)
+                    {
+                      //  The extra is a bundle
+                      bundleKey = key;
+                      bundle = toBundle((JSONObject)extras.get(key));
+                    }
+                    else
+                    {
+                      extrasMap.put(key, extras.getString(key));
+                    }
+                  //String value = extras.getString(key);
+                    //extrasMap.put(key, value);
                 }
             }
 
-            sendBroadcast(obj.getString("action"), packageAssociated, extrasMap);
+            sendBroadcast(obj.getString("action"), packageAssociated, extrasMap, bundle, bundleKey);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             return true;
         } else if (action.equals("registerBroadcastReceiver")) {
@@ -173,7 +201,7 @@ public class IntentShim extends CordovaPlugin {
                     filter.addCategory(filterCategories.getString(i));
                 }
             }
-            
+
             //  Add any specified Data Schemes
             //  https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent/issues/24
             JSONArray filterDataSchemes = obj.has("filterDataSchemes") ? obj.getJSONArray("filterDataSchemes") : null;
@@ -319,7 +347,8 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-    private void startActivity(String action, Uri uri, String type, String packageAssociated, Map<String, String> extras, boolean bExpectResult, int requestCode, CallbackContext callbackContext) {
+    private void startActivity(String action, Uri uri, String type, String packageAssociated, Map<String, String> extras,
+                               boolean bExpectResult, int requestCode, Bundle bundle, String bundleKey, CallbackContext callbackContext) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent i = (uri != null ? new Intent(action, uri) : new Intent(action));
 
@@ -364,8 +393,11 @@ public class IntentShim extends CordovaPlugin {
                 i.putExtra(key, value);
             }
         }
+        if (bundle != null)
+          i.putExtra(bundleKey, bundle);
 
-        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+      i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         if (i.resolveActivityInfo(this.cordova.getActivity().getPackageManager(), 0) != null)
         {
@@ -387,7 +419,7 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-    private void sendBroadcast(String action, String packageAssociated, Map<String, String> extras) {
+    private void sendBroadcast(String action, String packageAssociated, Map<String, String> extras, Bundle bundle, String bundleKey) {
         //  Credit: https://github.com/chrisekelley/cordova-webintent
         Intent intent = new Intent();
         intent.setAction(action);
@@ -397,6 +429,8 @@ public class IntentShim extends CordovaPlugin {
             String value = extras.get(key);
             intent.putExtra(key, value);
         }
+        if (bundle != null)
+          intent.putExtra(bundleKey, bundle);
 
         ((CordovaActivity)this.cordova.getActivity()).sendBroadcast(intent);
     }
@@ -544,14 +578,22 @@ public class IntentShim extends CordovaPlugin {
                 result.put(key, toJsonValue(bundle.get(key)));
             }
             return result;
-        } else if (value.getClass().isArray()) {
+        } else if ((value.getClass().isArray())) {
             final JSONArray result = new JSONArray();
             int length = Array.getLength(value);
             for (int i = 0; i < length; ++i) {
                 result.put(i, toJsonValue(Array.get(value, i)));
             }
             return result;
-        } else if (
+        }
+          else if (value instanceof ArrayList<?>) {
+          final ArrayList arrayList = (ArrayList<?>)value;
+          final JSONArray result = new JSONArray();
+          for (int i = 0; i < arrayList.size(); i++)
+            result.put(toJsonValue(arrayList.get(i)));
+          return result;
+        }
+        else if (
                 value instanceof String
                         || value instanceof Boolean
                         || value instanceof Integer
@@ -561,6 +603,57 @@ public class IntentShim extends CordovaPlugin {
         } else {
             return String.valueOf(value);
         }
+    }
+
+    private Bundle toBundle(final JSONObject obj) {
+      Bundle returnBundle = new Bundle();
+      if (obj == null) {
+        return null;
+      }
+      try {
+        Iterator<?> keys = obj.keys();
+        while(keys.hasNext())
+        {
+          String key = (String)keys.next();
+          Object compare = obj.get(key);
+          if (obj.get(key) instanceof String)
+            returnBundle.putString(key, obj.getString(key));
+          else if (obj.get(key) instanceof Integer)
+            returnBundle.putInt(key, obj.getInt(key));
+          else if (obj.get(key) instanceof Long)
+            returnBundle.putLong(key, obj.getLong(key));
+          else if (obj.get(key) instanceof Double)
+            returnBundle.putDouble(key, obj.getDouble(key));
+          else if (obj.get(key).getClass().isArray() || obj.get(key) instanceof JSONArray)
+          {
+            JSONArray jsonArray = obj.getJSONArray(key);
+            int length = jsonArray.length();
+            if (jsonArray.get(0) instanceof String)
+            {
+              String[] stringArray = new String[length];
+              for (int j = 0; j < length; j++)
+                stringArray[j] = jsonArray.getString(j);
+              returnBundle.putStringArray(key, stringArray);
+              //returnBundle.putParcelableArray(key, obj.get);
+            }
+            else
+            {
+              Bundle[] bundleArray = new Bundle[length];
+              for (int k = 0; k < length ; k++)
+                bundleArray[k] = toBundle(jsonArray.getJSONObject(k));
+              returnBundle.putParcelableArray(key, bundleArray);
+            }
+          }
+          else if (obj.get(key) instanceof JSONObject)
+            returnBundle.putBundle(key, toBundle((JSONObject)obj.get(key)));
+        }
+      }
+      catch (JSONException e) {
+        e.printStackTrace();
+      }
+
+
+      return returnBundle;
     }
 }
 
