@@ -93,7 +93,20 @@ public class IntentShim extends CordovaPlugin {
             sendBroadcast(intent);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             return true;
-        } else if (action.equals("registerBroadcastReceiver")) {
+        }
+        else if (action.equals("startService"))
+        {
+            if (args.length() != 1) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
+                return false;
+            }
+            JSONObject obj = args.getJSONObject(0);
+            Intent intent = populateIntent(obj, callbackContext);
+            startService(intent);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+            return true;
+        }
+        else if (action.equals("registerBroadcastReceiver")) {
             try
             {
                 //  Ensure we only have a single registered broadcast receiver
@@ -307,6 +320,11 @@ public class IntentShim extends CordovaPlugin {
 
     private void sendBroadcast(Intent intent) {
         ((CordovaActivity)this.cordova.getActivity()).sendBroadcast(intent);
+    }
+
+    private void startService(Intent intent)
+    {
+        ((CordovaActivity)this.cordova.getActivity()).startService(intent);
     }
 
     private Intent populateIntent(JSONObject obj, CallbackContext callbackContext) throws JSONException

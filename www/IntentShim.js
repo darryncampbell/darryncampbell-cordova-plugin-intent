@@ -35,7 +35,7 @@ IntentShim.prototype.startActivity = function(params, successCallback, errorCall
 };
 
 IntentShim.prototype.startActivityForResult = function(params, successCallback, errorCallback) {
-    argscheck.checkArgs('off', 'IntentShim.startActivity', arguments);
+    argscheck.checkArgs('off', 'IntentShim.startActivityForResult', arguments);
     exec(successCallback, errorCallback, "IntentShim", "startActivityForResult", [params]);
 };
 
@@ -44,9 +44,9 @@ IntentShim.prototype.sendBroadcast = function(params, successCallback, errorCall
     exec(successCallback, errorCallback, "IntentShim", "sendBroadcast", [params]);
 };
 
-IntentShim.prototype.sendBroadcast = function(params, successCallback, errorCallback) {
-    argscheck.checkArgs('off', 'IntentShim.sendBroadcast', arguments);
-    exec(successCallback, errorCallback, "IntentShim", "sendBroadcast", [params]);
+IntentShim.prototype.startService = function(params, successCallback, errorCallback) {
+    argscheck.checkArgs('off', 'IntentShim.startService', arguments);
+    exec(successCallback, errorCallback, "IntentShim", "startService", [params]);
 };
 
 IntentShim.prototype.registerBroadcastReceiver = function(params, callback) {
