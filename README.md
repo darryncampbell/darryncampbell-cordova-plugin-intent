@@ -204,7 +204,7 @@ The `intentShim.getIntent` function maps to Android's activity method getIntent,
             var intentExtras = intent.extras;
             if (intentExtras == null)
                 intentExtras = "No extras in intent";
-            console.log('Launch Intent Extras: ' + JSON.stringify(intentExtras);
+            console.log('Launch Intent Extras: ' + JSON.stringify(intentExtras));
         },
         function()
         {
