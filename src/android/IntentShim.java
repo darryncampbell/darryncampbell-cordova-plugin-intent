@@ -408,6 +408,16 @@ public class IntentShim extends CordovaPlugin {
         if (packageAssociated != null)
             i.setPackage(packageAssociated);
 
+        JSONArray flags = obj.has("flags") ? obj.getJSONArray("flags") : null;
+        if (flags != null)
+        {
+            int length = flags.length();
+            for (int k = 0; k < length; k++)
+            {
+                i.addFlags(flags.getInt(k));
+            }
+        }
+
         if (bundle != null)
             i.putExtra(bundleKey, bundle);
 
