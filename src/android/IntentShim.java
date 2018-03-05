@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -282,7 +283,7 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-    private void startActivity(Intent i/*String action, Uri uri, String type, String packageAssociated, Map<String, String> extras*/, boolean bExpectResult,  int requestCode, CallbackContext callbackContext) {
+    private void startActivity(Intent i, boolean bExpectResult,  int requestCode, CallbackContext callbackContext) {
 
         if (i.resolveActivityInfo(this.cordova.getActivity().getPackageManager(), 0) != null)
         {
@@ -304,7 +305,7 @@ public class IntentShim extends CordovaPlugin {
         }
     }
 
-    private void sendBroadcast(Intent intent/*String action, String packageAssociated, Map<String, String> extras*/) {
+    private void sendBroadcast(Intent intent) {
         ((CordovaActivity)this.cordova.getActivity()).sendBroadcast(intent);
     }
 
@@ -349,22 +350,8 @@ public class IntentShim extends CordovaPlugin {
                 }
             }
         }
-        /*
-        JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
-        Map<String, String> extrasMap = new HashMap<String, String>();
 
-        // Populate the extras if any exist
-        if (extras != null) {
-            JSONArray extraNames = extras.names();
-            for (int i = 0; i < extraNames.length(); i++) {
-                String key = extraNames.getString(i);
-                String value = extras.getString(key);
-                extrasMap.put(key, value);
-            }
-        }
-        */
-
-        String action = obj.getString("action");
+        String action = obj.has("action") ? obj.getString("action") : null;
         Intent i = new Intent();
         if (action != null)
             i.setAction(action);
@@ -378,6 +365,25 @@ public class IntentShim extends CordovaPlugin {
             if (uri != null)
             {
                 i.setData(uri);
+            }
+        }
+
+        JSONObject component = obj.has("component") ? obj.getJSONObject("component") : null;
+        if (component != null)
+        {
+            //  User has specified an explicit intent
+            String componentPackage = component.has("package") ? component.getString("package") : null;
+            String componentClass = component.has("class") ? component.getString("class") : null;
+            if (componentPackage == null || componentClass == null)
+            {
+                Log.w(LOG_TAG, "Component specified but missing corresponding package or class");
+                throw new JSONException("Component specified but missing corresponding package or class");
+            }
+
+            else
+            {
+                ComponentName componentName = new ComponentName(componentPackage, componentClass);
+                i.setComponent(componentName);
             }
         }
 
