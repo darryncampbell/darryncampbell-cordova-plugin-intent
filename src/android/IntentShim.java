@@ -351,7 +351,7 @@ public class IntentShim extends CordovaPlugin {
         }
 
         JSONObject extras = obj.has("extras") ? obj.getJSONObject("extras") : null;
-        Map<String, String> extrasMap = new HashMap<String, String>();
+        Map<String, Object> extrasMap = new HashMap<String, Object>();
         Bundle bundle = null;
         String bundleKey = "";
         if (extras != null) {
@@ -363,6 +363,14 @@ public class IntentShim extends CordovaPlugin {
                     //  The extra is a bundle
                     bundleKey = key;
                     bundle = toBundle((JSONObject) extras.get(key));
+                } else if (extrasObj instanceof Boolean) {
+                    extrasMap.put(key, extras.getBoolean(key));
+                } else if (extrasObj instanceof Integer) {
+                    extrasMap.put(key, extras.getInt(key));
+                } else if (extrasObj instanceof Long) {
+                    extrasMap.put(key, extras.getLong(key));
+                } else if (extrasObj instanceof Double) {
+                    extrasMap.put(key, extras.getDouble(key));
                 } else {
                     extrasMap.put(key, extras.getString(key));
                 }
@@ -422,29 +430,40 @@ public class IntentShim extends CordovaPlugin {
             i.putExtra(bundleKey, bundle);
 
         for (String key : extrasMap.keySet()) {
-            String value = extrasMap.get(key);
+            Object value = extrasMap.get(key);
+            String valueStr = String.valueOf(value);
             // If type is text html, the extra text must sent as HTML
             if (key.equals(Intent.EXTRA_TEXT) && type.equals("text/html")) {
-                i.putExtra(key, Html.fromHtml(value));
+                i.putExtra(key, Html.fromHtml(valueStr));
             } else if (key.equals(Intent.EXTRA_STREAM)) {
                 // allows sharing of images as attachments.
                 // value in this case should be a URI of a file
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && value.startsWith("file://"))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && valueStr.startsWith("file://"))
                 {
-                    Uri uriOfStream = remapUriWithFileProvider(value, callbackContext);
+                    Uri uriOfStream = remapUriWithFileProvider(valueStr, callbackContext);
                     if (uriOfStream != null)
                         i.putExtra(key, uriOfStream);
                 }
                 else
                 {
                     //final CordovaResourceApi resourceApi = webView.getResourceApi();
-                    i.putExtra(key, resourceApi.remapUri(Uri.parse(value)));
+                    i.putExtra(key, resourceApi.remapUri(Uri.parse(valueStr)));
                 }
             } else if (key.equals(Intent.EXTRA_EMAIL)) {
                 // allows to add the email address of the receiver
-                i.putExtra(Intent.EXTRA_EMAIL, new String[] { value });
+                i.putExtra(Intent.EXTRA_EMAIL, new String[] { valueStr });
             } else {
-                i.putExtra(key, value);
+                if (value instanceof Boolean) {
+                    i.putExtra(key, Boolean.valueOf(valueStr));
+                } else if(value instanceof Integer) {
+                    i.putExtra(key, Integer.valueOf(valueStr));
+                } else if(value instanceof Long) {
+                    i.putExtra(key, Long.valueOf(valueStr));
+                } else if(value instanceof Double) {
+                    i.putExtra(key, Double.valueOf(valueStr));
+                } else {
+                    i.putExtra(key, valueStr);
+                }
             }
         }
 
