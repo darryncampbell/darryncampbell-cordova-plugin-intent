@@ -636,6 +636,8 @@ public class IntentShim extends CordovaPlugin {
                 Object compare = obj.get(key);
                 if (obj.get(key) instanceof String)
                     returnBundle.putString(key, obj.getString(key));
+                else if (obj.get(key) instanceof Boolean)
+                    returnBundle.putBoolean(key, obj.getBoolean(key));
                 else if (obj.get(key) instanceof Integer)
                     returnBundle.putInt(key, obj.getInt(key));
                 else if (obj.get(key) instanceof Long)
