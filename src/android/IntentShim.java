@@ -49,6 +49,8 @@ public class IntentShim extends CordovaPlugin {
     private CallbackContext onBroadcastCallbackContext = null;
     private CallbackContext onActivityResultCallbackContext = null;
 
+    private Intent deferredIntent = null;
+
     public IntentShim() {
 
     }
@@ -184,6 +186,11 @@ public class IntentShim extends CordovaPlugin {
             }
 
             this.onNewIntentCallbackContext = callbackContext;
+
+            if (this.deferredIntent != null) {
+                fireOnNewIntent(this.deferredIntent);
+                this.deferredIntent = null;
+            }
 
             PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
             result.setKeepCallback(true);
@@ -467,10 +474,11 @@ public class IntentShim extends CordovaPlugin {
     @Override
     public void onNewIntent(Intent intent) {
         if (this.onNewIntentCallbackContext != null) {
-
-            PluginResult result = new PluginResult(PluginResult.Status.OK, getIntentJson(intent));
-            result.setKeepCallback(true);
-            this.onNewIntentCallbackContext.sendPluginResult(result);
+            fireOnNewIntent(intent);
+        }
+        else {
+            // save the intent for use when onIntent action is called in the execute method
+            this.deferredIntent = intent;
         }
     }
 
@@ -510,6 +518,17 @@ public class IntentShim extends CordovaPlugin {
             }
         }
     };
+
+    /**
+     * Sends the provided Intent to the onNewIntentCallbackContext.
+     * 
+     * @param intent This is the intent to send to the JS layer.
+     */
+    private void fireOnNewIntent(Intent intent) {
+        PluginResult result = new PluginResult(PluginResult.Status.OK, getIntentJson(intent));
+        result.setKeepCallback(true);
+        this.onNewIntentCallbackContext.sendPluginResult(result);
+    }
 
     /**
      * Return JSON representation of intent attributes
@@ -687,5 +706,3 @@ public class IntentShim extends CordovaPlugin {
         return returnBundle;
     }
 }
-
-
