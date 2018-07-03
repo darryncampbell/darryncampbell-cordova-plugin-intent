@@ -219,7 +219,16 @@ public class IntentShim extends CordovaPlugin {
                 return false;
             }
 
-            Intent intent = cordova.getActivity().getIntent();
+            Intent intent;
+
+            if (this.deferredIntent != null) {
+                intent = this.deferredIntent;
+                this.deferredIntent = null;
+            }
+            else {
+                intent = cordova.getActivity().getIntent();
+            }
+
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getIntentJson(intent)));
             return true;
         }

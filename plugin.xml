@@ -10,6 +10,7 @@
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="IntentShim" >
                 <param name="android-package" value="com.darryncampbell.cordova.plugin.intent.IntentShim"/>
+                <param name="onload" value="true"/>
             </feature>
         </config-file>
         <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application/activity" mode="merge">
