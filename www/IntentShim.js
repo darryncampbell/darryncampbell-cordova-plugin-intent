@@ -79,6 +79,11 @@ IntentShim.prototype.sendResult = function(params, callback) {
     exec(callback, null, "IntentShim", "sendResult", [params]);
 }
 
+IntentShim.prototype.realPathFromUri = function(params, successCallback, errorCallback) {
+    argscheck.checkArgs('off', 'IntentShim.realPathFromUri', arguments);
+    exec(successCallback, errorCallback, "IntentShim", "realPathFromUri", [params]);
+};
+
 window.intentShim = new IntentShim();
 window.plugins = window.plugins || {};
 window.plugins.intentShim = window.intentShim;

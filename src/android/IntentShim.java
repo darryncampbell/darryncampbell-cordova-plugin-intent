@@ -10,10 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -261,6 +264,19 @@ public class IntentShim extends CordovaPlugin {
             cordova.getActivity().finish();
 
         }
+        else if (action.equals("realPathFromUri"))
+        {
+            if (args.length() != 1) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
+                return false;
+            }
+
+            JSONObject obj = args.getJSONObject(0);
+            String realPath = getRealPathFromURI_API19(obj, callbackContext);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, realPath));
+            return true;
+
+        }
 
         return true;
     }
@@ -310,6 +326,67 @@ public class IntentShim extends CordovaPlugin {
             callbackContext.error("URL is not well formed");
             return null;
         }
+    }
+
+    private String getRealPathFromURI_API19(JSONObject obj, CallbackContext callbackContext) throws JSONException
+    {
+        //  Credit: https://stackoverflow.com/questions/2789276/android-get-real-path-by-uri-getpath/2790688
+        Uri uri = obj.has("uri") ? Uri.parse(obj.getString("uri")) : null;
+        if (uri == null)
+        {
+            Log.w(LOG_TAG, "URI is not a specified parameter");
+            throw new JSONException("URI is not a specified parameter");
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            String filePath = "";
+            if (uri.getHost().contains("com.android.providers.media")) {
+                int permissionCheck = ContextCompat.checkSelfPermission(this.cordova.getActivity(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE);
+                if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+                {
+                    //  Could do better here - if the app does not already have permission should
+                    //  only continue when we get the success callback from this.
+                    ActivityCompat.requestPermissions(this.cordova.getActivity(),
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                    callbackContext.error("Please grant read external storage permission");
+                    return null;
+                }
+
+                // Image pick from recent
+                String wholeID = DocumentsContract.getDocumentId(uri);
+
+                // Split at colon, use second item in the array
+                String id = wholeID.split(":")[1];
+
+                String[] column = {MediaStore.Images.Media.DATA};
+
+                // where id is equal to
+                String sel = MediaStore.Images.Media._ID + "=?";
+
+                //  This line requires read storage permission
+
+                Cursor cursor = this.cordova.getActivity().getApplicationContext().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        column, sel, new String[]{id}, null);
+
+                int columnIndex = cursor.getColumnIndex(column[0]);
+
+                if (cursor.moveToFirst()) {
+                    filePath = cursor.getString(columnIndex);
+                }
+                cursor.close();
+                return filePath;
+            } else {
+                // image pick from gallery
+                String[] proj = {MediaStore.Images.Media.DATA};
+                Cursor cursor = this.cordova.getActivity().getApplicationContext().getContentResolver().query(uri, proj, null, null, null);
+                int column_index
+                        = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                cursor.moveToFirst();
+                return cursor.getString(column_index);
+            }
+        }
+
+        return "Requires KK or higher";
     }
 
     private void startActivity(Intent i, boolean bExpectResult,  int requestCode, CallbackContext callbackContext) {
