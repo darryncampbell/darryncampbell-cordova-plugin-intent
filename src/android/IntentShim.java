@@ -253,7 +253,7 @@ public class IntentShim extends CordovaPlugin {
                         Object extrasObj = extras.get(key);
                         if (extrasObj instanceof JSONObject) {
                             //  The extra is a bundle
-                            bundle = toBundle((JSONObject) extras.get(key));
+                            Bundle bundle = toBundle((JSONObject) extras.get(key));
                             result.putExtra(key, bundle);
                         } else {
                           String value = extras.getString(key);
