@@ -250,8 +250,15 @@ public class IntentShim extends CordovaPlugin {
                     JSONArray extraNames = extras.names();
                     for (int i = 0; i < extraNames.length(); i++) {
                         String key = extraNames.getString(i);
-                        String value = extras.getString(key);
-                        result.putExtra(key, value);
+                        Object extrasObj = extras.get(key);
+                        if (extrasObj instanceof JSONObject) {
+                            //  The extra is a bundle
+                            bundle = toBundle((JSONObject) extras.get(key));
+                            result.putExtra(key, bundle);
+                        } else {
+                          String value = extras.getString(key);
+                          result.putExtra(key, value);
+                        }
                     }
                 }
             }
@@ -607,7 +614,7 @@ public class IntentShim extends CordovaPlugin {
 
     /**
      * Sends the provided Intent to the onNewIntentCallbackContext.
-     * 
+     *
      * @param intent This is the intent to send to the JS layer.
      */
     private void fireOnNewIntent(Intent intent) {
