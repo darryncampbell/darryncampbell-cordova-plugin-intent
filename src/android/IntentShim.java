@@ -316,7 +316,7 @@ public class IntentShim extends CordovaPlugin {
                     callbackContext.error("File not found: " + uriAsFile.toString());
                     return null;
                 }
-                String PACKAGE_NAME = this.cordova.getActivity().getPackageName() + ".provider";
+                String PACKAGE_NAME = this.cordova.getActivity().getPackageName() + ".darryncampbell.cordova.plugin.intent.fileprovider";
                 Uri uri = FileProvider.getUriForFile(this.cordova.getActivity().getApplicationContext(), PACKAGE_NAME, uriAsFile);
                 return uri;
             }
