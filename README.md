@@ -34,6 +34,10 @@ An example application is available at https://github.com/darryncampbell/plugin-
 ### Cordova Version >= 7
     cordova plugin add com-darryncampbell-cordova-plugin-intent
 
+## Use with PhoneGap
+
+Please use the latest PhoneGap cli when including this plugin, please refer to [Issue 63](https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent/issues/63) for context. 
+
 ## Supported Platforms
 - Android
 
