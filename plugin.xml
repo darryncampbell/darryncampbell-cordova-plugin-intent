@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="com-darryncampbell-cordova-plugin-intent" version="1.1.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.androcordov.com/apk/res/android">
+<plugin id="com-darryncampbell-cordova-plugin-intent" version="1.1.2" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.androcordov.com/apk/res/android">
     <name>Intent Shim</name>
     <js-module name="IntentShim" src="www/IntentShim.js">
         <clobbers target="intentShim" />
@@ -27,7 +27,7 @@
         </config-file>
         <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application" mode="merge">
             <provider
-                android:name="android.support.v4.content.FileProvider"
+                android:name="com.darryncampbell.cordova.plugin.intent.CordovaPluginIntentFileProvider"
                 android:authorities="${applicationId}.darryncampbell.cordova.plugin.intent.fileprovider"
                 android:exported="false"
                 android:grantUriPermissions="true">
@@ -37,6 +37,7 @@
             </provider>
         </config-file>
         <source-file src="src/android/IntentShim.java" target-dir="src/com/darryncampbell/plugin/intent" />
+        <source-file src="src/android/CordovaPluginIntentFileProvider.java" target-dir="src/com/darryncampbell/plugin/intent" />
 		<resource-file src="src/android/res/xml/provider_paths.xml" target="res/xml/provider_paths.xml"/>
 		<framework src="com.android.support:support-v4:27.1.0" />
     </platform>
