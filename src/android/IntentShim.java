@@ -781,10 +781,18 @@ public class IntentShim extends CordovaPlugin {
                     }
                     else
                     {
-                        Bundle[] bundleArray = new Bundle[length];
-                        for (int k = 0; k < length ; k++)
-                            bundleArray[k] = toBundle(jsonArray.getJSONObject(k));
-                        returnBundle.putParcelableArray(key, bundleArray);
+                        if (key.equals("PLUGIN_CONFIG")) {
+                            ArrayList<Bundle> bundleArray = new ArrayList<Bundle>();
+                            for (int k = 0; k < length; k++) {
+                                bundleArray.add(toBundle(jsonArray.getJSONObject(k)));
+                            }
+                            returnBundle.putParcelableArrayList(key, bundleArray);
+                        } else {
+                            Bundle[] bundleArray = new Bundle[length];
+                            for (int k = 0; k < length; k++)
+                                bundleArray[k] = toBundle(jsonArray.getJSONObject(k));
+                            returnBundle.putParcelableArray(key, bundleArray);
+                        }
                     }
                 }
                 else if (obj.get(key) instanceof JSONObject)
