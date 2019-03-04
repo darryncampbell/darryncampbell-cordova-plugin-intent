@@ -255,9 +255,18 @@ public class IntentShim extends CordovaPlugin {
                             //  The extra is a bundle
                             Bundle bundle = toBundle((JSONObject) extras.get(key));
                             result.putExtra(key, bundle);
+                        } else if (extrasObj instanceof Boolean) {
+                            result.putExtra(key, extras.getBoolean(key));
+                        } else if(extrasObj instanceof Integer) {
+                            result.putExtra(key, extras.getInt(key));
+                        } else if(extrasObj instanceof Long) {
+                            result.putExtra(key, extras.getLong(key));
+                        } else if(extrasObj instanceof Double) {
+                            result.putExtra(key, extras.getDouble(key));
+                        } else if (extrasObj instanceof Float) {
+                            result.putExtra(key, extras.getDouble(key));
                         } else {
-                          String value = extras.getString(key);
-                          result.putExtra(key, value);
+                            result.putExtra(key, extras.getString(key));
                         }
                     }
                 }
