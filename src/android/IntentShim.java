@@ -570,6 +570,10 @@ public class IntentShim extends CordovaPlugin {
 
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
+        if (obj.has("chooser")) {
+            i = Intent.createChooser(i, obj.getString("chooser"));
+        }
+
         return i;
     }
 
