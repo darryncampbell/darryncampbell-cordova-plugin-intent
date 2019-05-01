@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.webkit.MimeTypeMap;
 
 import org.apache.cordova.CallbackContext;
