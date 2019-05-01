@@ -553,6 +553,13 @@ public class IntentShim extends CordovaPlugin {
             } else if (key.equals(Intent.EXTRA_EMAIL)) {
                 // allows to add the email address of the receiver
                 i.putExtra(Intent.EXTRA_EMAIL, new String[] { valueStr });
+            } else if (key.equals(Intent.EXTRA_KEY_EVENT)) {
+                // allows to add a key event object
+                JSONObject keyEventJson = new JSONObject(valueStr);
+                int keyAction = keyEventJson.getInt("action");
+                int keyCode = keyEventJson.getInt("code");
+                KeyEvent keyEvent = new KeyEvent(keyAction, keyCode);
+                i.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent);
             } else {
                 if (value instanceof Boolean) {
                     i.putExtra(key, Boolean.valueOf(valueStr));
