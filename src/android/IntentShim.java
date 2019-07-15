@@ -413,11 +413,11 @@ public class IntentShim extends CordovaPlugin {
             if (bExpectResult)
             {
                 cordova.setActivityResultCallback(this);
-                ((CordovaActivity) this.cordova.getActivity()).startActivityForResult(i, requestCode);
+               this.cordova.getActivity().startActivityForResult(i, requestCode);
             }
             else
             {
-                ((CordovaActivity)this.cordova.getActivity()).startActivity(i);
+                this.cordova.getActivity().startActivity(i);
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             }
         }
