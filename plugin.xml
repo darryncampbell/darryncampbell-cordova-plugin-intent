@@ -4,6 +4,8 @@
     <js-module name="IntentShim" src="www/IntentShim.js">
         <clobbers target="intentShim" />
     </js-module>
+    
+    <hook type="after_prepare" src="hooks/after_prepare.js" />
 	
 	<!-- android -->
     <platform name="android">
