@@ -8,6 +8,10 @@
 
 Note: this is the current underlying implementation for https://www.npmjs.com/package/@ionic-native/web-intent and https://ionicframework.com/docs/native/web-intent/
 
+# Android X support
+- For Android X Support please use version >= 2.0.0 
+- For Android Support Library please use version [1.3.x](https://www.npmjs.com/package/com-darryncampbell-cordova-plugin-intent/v/1.3.0)
+
 # Interaction with Camera Plugin
 If you are installing this plugin along with cordova-plugin-camera you **MUST install cordova-plugin-camera first.**
 
