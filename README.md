@@ -260,11 +260,17 @@ Pick an Android contact
 
 Assuming this application was started with `intentShim.startActivityForResult`, send a result back
 
-    window.plugins.intentShim.sendResult(args);
+    window.plugins.intentShim.sendResult(args, callback);
 
 ### Description
 
-The `intentShim.sendResult` function returns an `Activity.RESULT_OK` Intent to the activity that started this application, along with any extras that you want to send along (as `args.extras` object). It then calls Android Activity's finish() method, https://developer.android.com/reference/android/app/Activity.html#finish().
+The `intentShim.sendResult` function returns an `Activity.RESULT_OK` Intent to the activity that started this application, along with any extras that you want to send along (as `args.extras` object), and a `callback` function. It then calls Android Activity's finish() method, https://developer.android.com/reference/android/app/Activity.html#finish().
+
+### Android Quirks
+
+Both `args` and `callback` arguments have to be provided. If you do not need the functionality, send an empty object and an empty function
+
+    window.plugins.intentShim.sendResult({}, function() {});
 
 ### Example
 
@@ -276,6 +282,9 @@ The `intentShim.sendResult` function returns an `Activity.RESULT_OK` Intent to t
                 'Test Intent bool': true,
                 'Test Intent double': parseFloat("142.12")
             }
+        },
+        function() {
+        
         }
     );
 
