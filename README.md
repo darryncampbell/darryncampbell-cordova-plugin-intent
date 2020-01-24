@@ -256,6 +256,28 @@ Pick an Android contact
         console.log("StartActivityForResult failure");
     });
 
+## intentShim.sendResult
+
+Assuming this application was started with `intentShim.startActivityForResult`, send a result back
+
+    window.plugins.intentShim.sendResult(args);
+
+### Description
+
+The `intentShim.sendResult` function returns an `Activity.RESULT_OK` Intent to the activity that started this application, along with any extras that you want to send along (as `args.extras` object). It then calls Android Activity's finish() method, https://developer.android.com/reference/android/app/Activity.html#finish().
+
+### Example
+
+    window.plugins.intentShim.sendResult(
+        {
+            extras: {
+                'Test Intent': 'Successfully sent',
+                'Test Intent int': 42,
+                'Test Intent bool': true,
+                'Test Intent double': parseFloat("142.12")
+            }
+        }
+    );
 
 ## Predefined Constants
 
