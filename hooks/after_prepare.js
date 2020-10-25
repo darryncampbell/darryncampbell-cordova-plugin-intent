@@ -1,4 +1,5 @@
 const fs = require("fs");
+const replace = require('replace-in-file');
 
 function androidXUpgrade (ctx) {
     if (!ctx.opts.platforms.includes('android'))
@@ -28,6 +29,18 @@ function androidXUpgrade (ctx) {
     }
 }
 
+function androidXReplace (ctx) {
+    if (!ctx.opts.platforms.includes('android'))
+        return;
+        
+    replace.sync({
+        files: 'platforms/android/**/*',
+        from: /android\.support\.annotation\.RequiresApi/g,
+        to: 'androidx.annotation.RequiresApi',
+    });
+}
+
 module.exports = function (ctx) {
     androidXUpgrade(ctx);
+    androidXReplace(ctx);
 };
