@@ -48,9 +48,10 @@ import static android.os.Environment.getExternalStorageState;
 
 public class IntentShim extends CordovaPlugin {
 
+    private final Map<BroadcastReceiver, CallbackContext> receiverCallbacks = new HashMap<>();
+
     private static final String LOG_TAG = "Cordova Intents Shim";
     private CallbackContext onNewIntentCallbackContext = null;
-    private CallbackContext onBroadcastCallbackContext = null;
     private CallbackContext onActivityResultCallbackContext = null;
 
     private Intent deferredIntent = null;
@@ -113,12 +114,7 @@ public class IntentShim extends CordovaPlugin {
             return true;
         }
         else if (action.equals("registerBroadcastReceiver")) {
-            try
-            {
-                //  Ensure we only have a single registered broadcast receiver
-                this.cordova.getActivity().unregisterReceiver(myBroadcastReceiver);
-            }
-            catch (IllegalArgumentException e) {}
+            Log.d(LOG_TAG, "Plugin no longer unregisters receivers on registerBroadcastReceiver invocation");
 
             //  No error callback
             if(args.length() != 1) {
@@ -136,8 +132,6 @@ public class IntentShim extends CordovaPlugin {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
                 return false;
             }
-
-            this.onBroadcastCallbackContext = callbackContext;
 
             PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
             result.setKeepCallback(true);
@@ -169,7 +163,10 @@ public class IntentShim extends CordovaPlugin {
                 }
             }
 
-            this.cordova.getActivity().registerReceiver(myBroadcastReceiver, filter);
+            BroadcastReceiver broadcastReceiver = newBroadcastReceiver();
+
+            this.cordova.getActivity().registerReceiver(broadcastReceiver, filter);
+            receiverCallbacks.put(broadcastReceiver, callbackContext);
 
             callbackContext.sendPluginResult(result);
         }
@@ -177,7 +174,7 @@ public class IntentShim extends CordovaPlugin {
         {
             try
             {
-                this.cordova.getActivity().unregisterReceiver(myBroadcastReceiver);
+                unregisterAllBroadcastReceivers();
             }
             catch (IllegalArgumentException e) {}
         }
@@ -296,6 +293,14 @@ public class IntentShim extends CordovaPlugin {
         }
 
         return true;
+    }
+
+    private void unregisterAllBroadcastReceivers() {
+        Log.d(LOG_TAG, "Unregistering all broadcast receivers, size was " + receiverCallbacks.size());
+        for (BroadcastReceiver broadcastReceiver: receiverCallbacks.keySet()) {
+            this.cordova.getActivity().unregisterReceiver(broadcastReceiver);
+        }
+        receiverCallbacks.clear();
     }
 
     private Uri remapUriWithFileProvider(String uriAsString, final CallbackContext callbackContext)
@@ -620,18 +625,21 @@ public class IntentShim extends CordovaPlugin {
 
     }
 
-    private BroadcastReceiver myBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (onBroadcastCallbackContext != null)
-            {
-                PluginResult result = new PluginResult(PluginResult.Status.OK, getIntentJson(intent));
-                result.setKeepCallback(true);
-                onBroadcastCallbackContext.sendPluginResult(result);
+    private BroadcastReceiver newBroadcastReceiver() {
+        return new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                CallbackContext onBroadcastCallbackContext = receiverCallbacks.get(this);
+                if (onBroadcastCallbackContext != null)
+                {
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, getIntentJson(intent));
+                    result.setKeepCallback(true);
+                    onBroadcastCallbackContext.sendPluginResult(result);
+                }
             }
-        }
-    };
+        };
+    }
 
     /**
      * Sends the provided Intent to the onNewIntentCallbackContext.

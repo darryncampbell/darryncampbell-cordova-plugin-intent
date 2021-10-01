@@ -55,10 +55,6 @@ Registers a broadcast receiver for the specified filters
 
 The `intentShim.registerBroadcastReceiver` function registers a dynamic broadcast receiver for the specified list of filters and invokes the specified callback when any of those filters are received
 
-### Android Quirks
-
-Any existing broadcast receiver is unregistered when this method is called.  To register for multiple types of broadcast, specify multiple filters.
-
 ### Example
 
 Register a broadcast receiver for two filters:
@@ -77,13 +73,13 @@ Register a broadcast receiver for two filters:
 
 ## intentShim.unregisterBroadcastReceiver
 
-Unregisters the broadcast receiver
+Unregisters any BroadcastRecivers
 
     window.plugins.intentShim.unregisterBroadcastReceiver();
 
 ### Description
 
-The `intentShim.unregisterBroadcastReceiver` function unregisters the broadcast receiver registered with `intentShim.registerBroadcastReceiver(filters, callback);`.  No further broadcasts will be received for any registered filter after this call.
+The `intentShim.unregisterBroadcastReceiver` function unregisters all broadcast receivers registered with `intentShim.registerBroadcastReceiver(filters, callback);`.  No further broadcasts will be received for any registered filter after this call.
 
 ### Android Quirks
 
