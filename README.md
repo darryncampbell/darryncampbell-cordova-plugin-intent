@@ -284,6 +284,30 @@ Both `args` and `callback` arguments have to be provided. If you do not need the
         }
     );
 
+## intentShim.packageExists
+Returns a boolean indicating if a specific package is installed on the device.
+
+```js
+window.plugins.intentShim.packageExists(packageName, callback);
+```
+
+### Description
+
+The `intentShim.packageExists` function returns a boolean indicating if a specific [package](https://developer.android.com/studio/build/configure-app-module#set_the_application_id) is installed on the current device.
+
+### Example
+```js
+const packageName = 'com.android.contacts';
+
+window.plugins.intentShim.packageExists(packageName, (exists) => {
+    if (exists) {
+        console.log(`${packageName} exists!`);
+    } else {
+        console.log(`${packageName} does not exist...`);
+    }
+});
+```
+
 ## Predefined Constants
 
 The following constants are defined in the plugin for use in JavaScript

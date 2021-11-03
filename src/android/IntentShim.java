@@ -293,6 +293,23 @@ public class IntentShim extends CordovaPlugin {
             return true;
 
         }
+        else if (action.equals("packageExists"))
+        {
+            try {
+                if (args.length() < 1) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
+                    return false;
+                }
+
+                PackageManager packageManager = this.cordova.getActivity().getApplicationContext().getPackageManager();
+                packageManager.getPackageInfo(args.getString(0), 0);
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
+                return true;
+            } catch (PackageManager.NameNotFoundException e) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, false));
+                return true;
+            }
+        }
 
         return true;
     }
